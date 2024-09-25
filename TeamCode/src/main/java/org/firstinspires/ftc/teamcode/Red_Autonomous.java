@@ -349,6 +349,7 @@ public class Red_Autonomous extends LinearOpMode {
     @Override
     public void runOpMode() {
         initialize();
+
         setBrake();
         stopAndResetEncoders();
         setDirection();
