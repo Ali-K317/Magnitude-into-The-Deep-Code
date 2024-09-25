@@ -34,76 +34,36 @@ public class Red_Autonomous extends LinearOpMode {
     // Timer
     private ElapsedTime runtime = new ElapsedTime();
 
-    // Constants
+    // Wheel and wheel motor measurement
+    private static final double GEAR_RATIO = 1.0/1.0;
     private static final double COUNTS_PER_MOTOR_REV = 28;
-    private static final double WHEEL_DIAMETER_INCHES = 9.0;
-    private static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * Math.PI) / WHEEL_DIAMETER_INCHES;
+    private static final double WHEEL_DIAMETER_INCHES = 3.5;
+    private static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * GEAR_RATIO) / (Math.PI*WHEEL_DIAMETER_INCHES);
 
-    private static final double robotLength = 16.0;
-    private static final double robotWidth = 16.0;
-    private static final double robotHeight = 16.0;
-    private static final double halfRL = robotLength / 2;
-    private static final double halfRW = robotWidth / 2;
-    private static final double halfRH = robotHeight / 2;
+    //Robot speed
+    private final double turnSpeed = 0.2;
+    private final double driveSpeed = 0.3;
 
-    private static final double threshold = 3000;
-
-    @Override
-    public void runOpMode() {
-        initialize();
-        setBrake();
-        stopAndResetEncoders();
-        setDirection();
-
-        waitForStart();
-        while (opModeIsActive()) {
-
-            int red = colorSensor.red();
-            int green = colorSensor.green();
-            int blue = colorSensor.blue();
-            boolean yellow = false;
-
-            // Determine alliance and enemy colors
-            double allianceColor = red;
-            int enemyColor = blue;
-            setTelemetry();
-
-            //double distance = distanceSensor.getDistance(DistanceUnit.INCH);
+    //Robot body measurements
+    private final double robotLength = 16.0;
+    private final double robotWidth = 16.0;
+    private final double robotHeight = 16.0;
+    private final double halfRL = robotLength / 2;
+    private final double halfRW = robotWidth / 2;
+    private final double halfRH = robotHeight / 2;
 
 
-            //forward(5.0, 0.3);
-            // Move forward while alliance color is weaker than enemy color
-            if ((blue + 1000 < red) && (blue + 1000 < green)) yellow = true;
-            else yellow = false;
-            while (!yellow && opModeIsActive()) {
-                red = colorSensor.red();
-                green = colorSensor.green();
-                blue = colorSensor.blue();
-                // Check if yellow is detected
-                if ((blue + 1000 < red) && (blue + 1000 < green)) {
-                    yellow = true;
-                } else {
-                    // Move forward if yellow is not detected
-                    forward(1.0, 0.3);
-                }
-            }
-            forward(1.0, 0.3);
-            break;
-        }
+    int red = colorSensor.red();
+    int green = colorSensor.green();
+    int blue = colorSensor.blue();
+    boolean yellow = false;
 
+    // Determine alliance and enemy colors
+    double allianceColor = red;
+    int enemyColor = blue;
 
-//            while (!yellow && opModeIsActive() && runtime.seconds() < 5.0) {
-//                forward(1.0, 0.3);
-//                red = colorSensor.red();
-//                green = colorSensor.green();
-//                blue = colorSensor.blue();
-//                if ((blue+1000<red)&&(blue+1000<green)) yellow = true;
-//                else{ yellow = false;}
-//
-//            }
-//            stopRobot();
+    //double distance = distanceSensor.getDistance(DistanceUnit.INCH);
 
-    }
 
 
     // Initializes motors, servos, and sensors
@@ -126,10 +86,11 @@ public class Red_Autonomous extends LinearOpMode {
 
     // Sets the motors direction when powered with a positive number
     private void setDirection() {
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        frontRight.setDirection(DcMotor.Direction.FORWARD);
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.FORWARD);
+
+        frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.FORWARD);
+        backRight.setDirection(DcMotor.Direction.REVERSE);
         jointOne.setDirection(DcMotor.Direction.REVERSE);
         jointTwo.setDirection(DcMotor.Direction.REVERSE);
     }
@@ -203,9 +164,10 @@ public class Red_Autonomous extends LinearOpMode {
         backRight.setPower(speed);
 
         while (opModeIsActive() && (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy())) {
-
+            setTelemetry();
         }
         stopAndResetEncoders();
+        stopRobot(1.0);
     }
 
     // Moves the robot backward
@@ -219,9 +181,10 @@ public class Red_Autonomous extends LinearOpMode {
         backRight.setPower(-speed);
 
         while (opModeIsActive() && (frontLeft.isBusy() && frontRight.isBusy() && backLeft.isBusy() && backRight.isBusy())) {
-
+            setTelemetry();
         }
         stopAndResetEncoders();
+        stopRobot(1.0);
     }
 
     // Strafe left movement
@@ -241,6 +204,7 @@ public class Red_Autonomous extends LinearOpMode {
 
         }
         stopAndResetEncoders();
+        stopRobot(1.0);
     }
 
     // Strafe right movement
@@ -260,6 +224,7 @@ public class Red_Autonomous extends LinearOpMode {
 
         }
         stopAndResetEncoders();
+        stopRobot(1.0);
     }
 
     // Turn right by specified degrees
@@ -286,6 +251,7 @@ public class Red_Autonomous extends LinearOpMode {
 
         }
         stopAndResetEncoders();
+        stopRobot(1.0);
     }
 
     // Turn left by specified degrees
@@ -313,6 +279,7 @@ public class Red_Autonomous extends LinearOpMode {
 
         }
         stopAndResetEncoders();
+        stopRobot(1.0);
     }
 
     // Opens the claw to a specific position
@@ -326,11 +293,73 @@ public class Red_Autonomous extends LinearOpMode {
     }
 
     // Stops the robot by setting power to 0
-    private void stopRobot() {
+    private void stopRobot(double time) {
         frontLeft.setPower(0);
         frontRight.setPower(0);
         backLeft.setPower(0);
         backRight.setPower(0);
+        while(opModeIsActive() && runtime.seconds() < time){
+
+        }
         stopAndResetEncoders();
+    }
+
+
+    private void startPosition(){
+        //TODO use distance sensors to set your initial starting position
+        forward(5.0, 0.3);
+        double turnAngle = 90;
+        // Move forward while alliance color is weaker than enemy color
+        turnRight(turnAngle,turnSpeed);
+        stopRobot(2.0);
+        backward(4.0, driveSpeed);
+        stopRobot(1.0);
+    }
+    private void detectYellow(){
+        if ((blue < red) && (blue  < green)) yellow = true;
+        else yellow = false;
+
+        while (!yellow && opModeIsActive()) {
+            red = colorSensor.red();
+            green = colorSensor.green();
+            blue = colorSensor.blue();
+            // Check if yellow is detected
+            if ((blue < red) && (blue < green)) {
+                yellow = true;
+            } else {
+                // Move forward if yellow is not detected
+                goToBox();
+            }
+        }
+    }
+    private void goToBox(){
+        //TODO make a function that goes to the box and drops the block
+        strafeLeft(0.1,driveSpeed);
+    }
+    private void goBackToStart(){
+        //TODO make a function that goes make to its initial position
+        //QUESTION maybe do the opposite of goToBox()?
+        forward(1.0, 0.1);
+    }
+
+
+
+
+
+    @Override
+    public void runOpMode() {
+        initialize();
+        setBrake();
+        stopAndResetEncoders();
+        setDirection();
+
+        waitForStart();
+        while (opModeIsActive()) {
+            startPosition();
+            detectYellow();
+            goBackToStart();
+            break;
+        }
+
     }
 }
