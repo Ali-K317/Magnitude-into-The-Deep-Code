@@ -14,10 +14,41 @@ public class teleop extends LinearOpMode implements teleop_interface {
     @Override
     public void initialize() {
         // Initialize motors by getting them from the hardware map
-        hardware.frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-        hardware.frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        hardware.backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        hardware.backRight = hardwareMap.get(DcMotor.class, "backRight");
+        try {
+            hardware.frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+            telemetry.addLine("Front Left init successful");
+            telemetry.update();
+        }catch (NullPointerException e){
+            telemetry.addLine("Front left motor failed to init");
+            telemetry.update();
+        }
+
+        try {
+            hardware.frontRight = hardwareMap.get(DcMotor.class, "frontRight");
+            telemetry.addLine("Front Right init successful");
+            telemetry.update();
+        }catch (NullPointerException e){
+            telemetry.addLine("Front right motor failed to init");
+            telemetry.update();
+        }
+
+        try {
+            hardware.backLeft = hardwareMap.get(DcMotor.class, "backLeft");
+            telemetry.addLine("Back Left init successful");
+            telemetry.update();
+        }catch(NullPointerException e){
+            telemetry.addLine("Back left motor failed to init");
+            telemetry.update();
+        }
+
+        try {
+            hardware.backRight = hardwareMap.get(DcMotor.class, "backRight");
+            telemetry.addLine("Back Right init successful");
+            telemetry.update();
+        }catch (NullPointerException e){
+            telemetry.addLine("Back right motor failed to init");
+            telemetry.update();
+        }
     }
 
     @Override
@@ -62,18 +93,14 @@ public class teleop extends LinearOpMode implements teleop_interface {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        try {
-            // Initialize hardware
-            initialize();
-            telemetry.addLine("Init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("One or more motors returned null");
-            telemetry.update();
-        }
+        //Initializes the motors
+        initialize();
 
         // Set motor directions
         setDirection();
+
+        //Tells the driver that the robot is ready
+        telemetry();
 
         // Wait for the start button to be pressed
         waitForStart();
@@ -81,7 +108,6 @@ public class teleop extends LinearOpMode implements teleop_interface {
         // Main loop
         while (opModeIsActive()) {
             // Update telemetry
-            telemetry();
             double reduction = 0.4;
             double turnReduction = 0.35;
 
