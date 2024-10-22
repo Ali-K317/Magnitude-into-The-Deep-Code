@@ -4,7 +4,10 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class hardware {
     public DcMotor frontLeft;//ctrl hub prt 0
@@ -13,7 +16,10 @@ public class hardware {
     public DcMotor backRight;//crtl hub prt 3
 
     public DcMotor mantis;
+    public DcMotor hopper;
     public DcMotor lift;
+
+    public Servo grabber;
 
     public DistanceSensor distanceSensorLeft;//crtl hub I2C prt 1
     public DistanceSensor distanceSensorBack;//crtl hub I2C prt 2
@@ -21,6 +27,48 @@ public class hardware {
     public DistanceSensor distanceSensorRight;//exp hub I2C prt 0
 
     public ElapsedTime runTime = new ElapsedTime();
+
+    public void checkMotorInit(){
+        // Check if motors are initialized
+        if (frontLeft == null) {
+            throw new NullPointerException("Front Left Motor is not initialized.");
+        }
+        if (frontRight == null) {
+            throw new NullPointerException("Front Right Motor is not initialized.");
+        }
+        if (backLeft == null) {
+            throw new NullPointerException("Back Left Motor is not initialized.");
+        }
+        if (backRight == null) {
+            throw new NullPointerException("Back Right Motor is not initialized.");
+        }
+
+        if (mantis == null){
+            throw new NullPointerException("Mantis arm is not initialized");
+        }
+        if (lift == null){
+            throw new NullPointerException("Lift motor not initialized");
+        }
+        if (hopper == null){
+            throw new NullPointerException("Hopper motor not initialized");
+        }
+        if (grabber == null){
+            throw new NullPointerException("Grabber servo not initialized");
+        }
+
+        if(colorSensor == null){
+            throw new NullPointerException("Color Sensor is not initialized");
+        }
+        if(distanceSensorRight == null){
+            throw new NullPointerException("Right distance sensor not initialized");
+        }
+        if(distanceSensorLeft == null){
+            throw new NullPointerException("Left distance sensor not initialized");
+        }
+        if(distanceSensorBack == null){
+            throw new NullPointerException("Back distance sensor not initialized");
+        }
+    }
     public String[] puns = {
             "I'm wired for success!",
             "I’ve got a lot of drive – especially for motors!",
@@ -40,15 +88,4 @@ public class hardware {
             "Keep calm and carry on coding.",
             "It’s time to servo up some victories!"
     };
-
-
-    public void init(HardwareMap hardwareMap) {
-        // Initialize individual motors
-        frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight = hardwareMap.get(DcMotor.class, "backRight");
-
-    }
-    public DcMotor[] motors = new DcMotor[]{frontLeft,frontRight,backLeft,backRight};
 }

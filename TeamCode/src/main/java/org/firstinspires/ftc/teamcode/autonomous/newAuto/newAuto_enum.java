@@ -12,6 +12,7 @@ public enum newAuto_enum {
 
     MANTIS,
     LIFT,
+    HOPPER,
 
     TURN_LEFT,
     TURN_RIGHT,

@@ -58,18 +58,25 @@ public class NewAuto extends LinearOpMode implements newAuto_interface {
         telemetry.addData("Pun of the day", randomPun);
         if (isDriving){
             if(hardware.frontLeft.isBusy()) {
+                telemetry.addLine("=== Wheel ===");
                 telemetry.addData("Front left motor position", hardware.frontLeft.getCurrentPosition());
                 telemetry.addData("Front right motor position", hardware.frontRight.getCurrentPosition());
                 telemetry.addData("Back left motor position", hardware.backLeft.getCurrentPosition());
                 telemetry.addData("Back right motor position", hardware.backRight.getCurrentPosition());
             }
             if(hardware.lift.isBusy()){
+                telemetry.addLine("=== Lift ===");
                 telemetry.addData("Lift motor position", hardware.lift.getCurrentPosition());
             }else if(hardware.mantis.isBusy()){
+                telemetry.addLine("=== Mantis ===");
                 telemetry.addData("Mantis Motor Position", hardware.mantis.getCurrentPosition());
             }else if (hardware.hopper.isBusy()){
+                telemetry.addLine("=== Hopper Arm ===");
                 telemetry.addData("Hopper Motor Position", hardware.hopper.getCurrentPosition());
-                }
+            }else if (hardware.grabber.getPosition() != 0){
+                telemetry.addLine("=== Grabber ===");
+                telemetry.addData("Grabber Position", hardware.grabber.getPosition());
+            }
         }else{
             telemetry.addLine("Robot stopped");
         }
