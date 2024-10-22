@@ -2,103 +2,99 @@ package org.firstinspires.ftc.teamcode.teleop.newTeleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 // TeleOp annotation to register this OpMode with the FTC Driver Station
 @TeleOp(name = "Into The Deep Teleop", group = "Teleop")
 public class teleop extends LinearOpMode implements teleop_interface {
     // Instance of the hardware class to manage robot components
-    hardware hardware = new hardware();
+    final hardware hardware = new hardware();
 
     @Override
     public void initialize() {
-        // Initialize motors and servos by getting them from the hardware map
-        try {
+        try{
+            //DcMotor
             hardware.frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-            telemetry.addLine("Front Left init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Front left motor failed to init");
-            telemetry.update();
-        }
-
-        try {
             hardware.frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-            telemetry.addLine("Front Right init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Front right motor failed to init");
-            telemetry.update();
-        }
-
-        try {
             hardware.backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-            telemetry.addLine("Back Left init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Back left motor failed to init");
-            telemetry.update();
-        }
-
-        try {
             hardware.backRight = hardwareMap.get(DcMotor.class, "backRight");
-            telemetry.addLine("Back Right init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Back right motor failed to init");
-            telemetry.update();
-        }
 
-        try {
-            hardware.lift = hardwareMap.get(DcMotor.class, "lift");
-            telemetry.addLine("Lift init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Lift motor failed to init");
-            telemetry.update();
-        }
-
-        try {
-            hardware.hopper = hardwareMap.get(DcMotor.class, "hopper");
-            telemetry.addLine("Hopper init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Hopper motor failed to init");
-            telemetry.update();
-        }
-
-        try {
             hardware.mantis = hardwareMap.get(DcMotor.class, "mantis");
-            telemetry.addLine("Mantis init successful");
-            telemetry.update();
-        } catch (NullPointerException e) {
-            telemetry.addLine("Mantis failed to init");
-            telemetry.update();
-        }
+            hardware.lift = hardwareMap.get(DcMotor.class, "lift");
+            hardware.hopper = hardwareMap.get(DcMotor.class, "hopper");
 
-        try {
+            //Servos
             hardware.grabber = hardwareMap.get(Servo.class, "grabber");
-            telemetry.addLine("Grabber init successful");
-            telemetry.update();
+
+            //Sensors
+            hardware.colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
+            hardware.distanceSensorLeft = hardwareMap.get(DistanceSensor.class, "distanceSensorLeft");
+            hardware.distanceSensorBack = hardwareMap.get(DistanceSensor.class, "distanceSensorBack");
+            hardware.distanceSensorRight = hardwareMap.get(DistanceSensor.class, "distanceSensorRight");
+
+            hardware.checkMotorInit();
         } catch (NullPointerException e) {
-            telemetry.addLine("Grabber servo failed to init");
+            telemetry.addLine("Initialization error: " + e.getMessage());
+            telemetry.update();
+        } catch (Exception e) {
+            telemetry.addLine("An error occurred during initialization: " + e.getMessage());
             telemetry.update();
         }
     }
 
     @Override
+    //TODO find direction
     public void setDirection() {
         // Set the direction of each motor
         hardware.frontLeft.setDirection(DcMotor.Direction.REVERSE); // Reverse front left motor
         hardware.frontRight.setDirection(DcMotor.Direction.FORWARD); // Forward front right motor
         hardware.backLeft.setDirection(DcMotor.Direction.REVERSE); // Reverse back left motor
-        hardware.backRight.setDirection(DcMotor.Direction.FORWARD); // Forward back right motor
+        hardware.backRight.setDirection(DcMotor.Direction.FORWARD);// Forward back right motor
+
         hardware.lift.setDirection(DcMotor.Direction.FORWARD); // Forward lift motor
         hardware.mantis.setDirection(DcMotor.Direction.FORWARD); // Forward mantis motor
         hardware.hopper.setDirection(DcMotor.Direction.FORWARD); // Forward hopper motor
+    }
+
+    @Override
+    public void telemetry() {
+        // Provide feedback about the robot's state
+        while(opModeInInit()) {
+            telemetry.addLine("=== Robot Initialization ===");
+            telemetry.addLine("Status: Initializing");
+            telemetry.addLine("Press START when ready");
+            telemetry.update();
+        }
+        whileMotorsBusy();
+    }
+
+    // Check if motors are busy and display telemetry
+    @Override
+    public void whileMotorsBusy() {
+        telemetry.addLine("Code is running");
+            if(hardware.frontLeft.isBusy()) {
+                telemetry.addLine("=== Wheel ===");
+                telemetry.addData("Front left motor position", hardware.frontLeft.getCurrentPosition());
+                telemetry.addData("Front right motor position", hardware.frontRight.getCurrentPosition());
+                telemetry.addData("Back left motor position", hardware.backLeft.getCurrentPosition());
+                telemetry.addData("Back right motor position", hardware.backRight.getCurrentPosition());
+            }else if(hardware.lift.isBusy()){
+                telemetry.addLine("=== Lift ===");
+                telemetry.addData("Lift motor position", hardware.lift.getCurrentPosition());
+            }else if(hardware.mantis.isBusy()){
+                telemetry.addLine("=== Mantis ===");
+                telemetry.addData("Mantis Motor Position", hardware.mantis.getCurrentPosition());
+            }else if (hardware.hopper.isBusy()){
+                telemetry.addLine("=== Hopper Arm ===");
+                telemetry.addData("Hopper Motor Position", hardware.hopper.getCurrentPosition());
+            }else if (hardware.grabber.getPosition() != 0){
+                telemetry.addLine("=== Grabber ===");
+                telemetry.addData("Grabber Position", hardware.grabber.getPosition());
+            }
+        telemetry.update();
     }
 
     @Override
@@ -108,7 +104,6 @@ public class teleop extends LinearOpMode implements teleop_interface {
         hardware.frontRight.setPower(-vertical + strafe + turn); // Calculate power for front right motor
         hardware.backLeft.setPower(-vertical + strafe - turn); // Calculate power for back left motor
         hardware.backRight.setPower(-vertical - strafe + turn); // Calculate power for back right motor
-        whileMotorsBusy(); // Check if motors are busy and update telemetry
     }
 
     // Control the robot's arm based on the state and speed
@@ -139,40 +134,11 @@ public class teleop extends LinearOpMode implements teleop_interface {
         hardware.grabber.setPosition(pos); // Set the position of the grabber servo
     }
 
-    @Override
-    public void telemetry() {
-        // Provide feedback about the robot's state
-        telemetry.addLine("Robot started"); // Notify that the robot has started
-        telemetry.update(); // Update the telemetry display
-    }
-
-    // Check if motors are busy and display telemetry
-    @Override
-    public boolean whileMotorsBusy() {
-        // Check if all motors are busy
-        while (opModeIsActive() &&
-                hardware.frontLeft.isBusy() &&
-                hardware.frontRight.isBusy() &&
-                hardware.backLeft.isBusy() &&
-                hardware.backRight.isBusy()) {
-            // Update telemetry with motor powers and positions
-            telemetry.addData("Front Left Power", hardware.frontLeft.getPower());
-            telemetry.addData("Front Right Power", hardware.frontRight.getPower());
-            telemetry.addData("Back Left Power", hardware.backLeft.getPower());
-            telemetry.addData("Back Right Power", hardware.backRight.getPower());
-            telemetry.addData("Lift Power", hardware.lift.getPower());
-            telemetry.addData("Mantis Power", hardware.mantis.getPower());
-            telemetry.addData("Hopper Arm Power", hardware.hopper.getPower());
-            telemetry.addData("Grabber Position", hardware.grabber.getPosition());
-            telemetry.update(); // Update the telemetry display
-            return true; // Return true while motors are busy
-        }
-        return false; // Return false when motors are not busy
-    }
-
     //TODO test arms
+
     // Method for controlling final movement with reduced speeds
-    private void finalMovement() {
+    @Override
+    public void finalMovement() {
         double reduction = 0.8; // Default speed reduction
         double turnReduction = 0.55; // Default turning speed reduction
 
@@ -199,7 +165,8 @@ public class teleop extends LinearOpMode implements teleop_interface {
     }
 
     // Method for controlling the arm based on gamepad input
-    private void finalArm() {
+    @Override
+    public void finalArm() {
         teleop_enum state = null; // Initialize state
         double armSpeed = 0; // Initialize arm speed
         // Determine arm state and speed based on gamepad input
@@ -213,11 +180,15 @@ public class teleop extends LinearOpMode implements teleop_interface {
             state = teleop_enum.LIFT; // Set state to LIFT
             armSpeed = gamepad2.right_stick_y; // Use right stick Y for speed
         }
-        arm(state, armSpeed); // Call arm method with determined state and speed
+        if (state != null) {
+            arm(state, armSpeed); // Call arm method with determined state and speed
+        }
     }
 
     // Method for controlling the gripper based on gamepad input
-    private void finalGrabber() {
+    @Override
+    public void finalGrabber() {
+        //TODO find open and close position
         int close = -200; // Position to close the gripper
         int open = 200; // Position to open the gripper
         // Control gripper based on button presses
@@ -239,6 +210,7 @@ public class teleop extends LinearOpMode implements teleop_interface {
 
         // Main loop for controlling the robot during teleop
         while (opModeIsActive()) {
+            telemetry();
             finalMovement(); // Control robot movement
             finalArm(); // Control robot arm
             finalGrabber(); // Control gripper
