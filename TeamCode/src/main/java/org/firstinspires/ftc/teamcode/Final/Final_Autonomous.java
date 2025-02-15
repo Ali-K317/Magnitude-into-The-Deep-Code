@@ -238,6 +238,21 @@ public class Final_Autonomous extends LinearOpMode {
         }
     }
 
+    private void wiggle () {
+        while(timer.seconds() <= timeToTravel1Tile * 0.15){
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("FORWARD", driveSpeed);
+        }
+        timer.reset();
+        while(timer.seconds() <= timeToTravel1Tile * 0.15){
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("BACKWARD", driveSpeed);
+        }
+        timer.reset();
+    }
+
     //Moves the preset block to the hopper
     private void moveToHopper(){
         armBrake("MANTIS");
@@ -247,19 +262,26 @@ public class Final_Autonomous extends LinearOpMode {
             moveWheels("BACKWARD", driveSpeed);
         }
         timer.reset();
-
         while(timer.seconds() <= timeToRotate360 / 8) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("TURN_LEFT", driveSpeed);
         }
         timer.reset();
-
+        setWheelSpeed(0,0,0,0);
         while(timer.seconds() <= timeToLiftHopper){
             setArmSpeed("HOPPER", 1);
         }
         timer.reset();
-
         armBrake("HOPPER");
+        while(timer.seconds() <= timeToTravel1Tile * 0.248){
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("BACKWARD", driveSpeed);
+        }
+        for(int i = 0; i < 4; i++){
+            wiggle();
+        }
+        setWheelSpeed(0,0,0,0);
     }
 }
