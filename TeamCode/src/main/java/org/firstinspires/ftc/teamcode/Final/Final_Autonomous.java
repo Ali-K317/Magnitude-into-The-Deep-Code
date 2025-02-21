@@ -15,7 +15,7 @@ import java.util.Random;
 @Autonomous(name = "Time Based Auto", group = "Final")
 public class Final_Autonomous extends LinearOpMode {
     hardware hardware = new hardware();
-    
+
     private final String[] puns = {
             "A robot didn’t want to have his photo taken. When he was asked why, he replied: Because I’m a photo-resistor!",
             "A robot gets arrested. He’s charged with battery.",
@@ -67,7 +67,16 @@ public class Final_Autonomous extends LinearOpMode {
     //TIME
     double timeToRotate360 = 2.29;
     double timeToTravel1Tile = 0.73;
+    double timeToTravelDiagnal = (timeToTravel1Tile * Math.sqrt(8)) / 2;
     double timeToLiftHopper = 1.8;
+    double timeArmtoGround = 0.5;
+    double timeArmtoHopper = 0.55;
+    double timeToIntakeBlock = 1.4;
+    double timeToSpitOutBlock = 1.5;
+
+    //HATCH
+    double open = 0.25;       // Open door position
+    double close = 0.6;// Close door position
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -76,14 +85,20 @@ public class Final_Autonomous extends LinearOpMode {
         setArmDirection();
 
 
-        while(opModeInInit()){
+        while (opModeInInit()) {
             timer.reset();
             telemetry.addLine(randomPun);
         }
         waitForStart();
         while (opModeIsActive()) {
             sendTelemetryData();
+//            while (timer.seconds() <= 0.47) {
+//                telemetry.addLine("Working");
+//                telemetry.update();
+//                moveWheels("TURN_LEFT", driveSpeed);
+//            }
             moveToHopper();
+            pushBlocks();
             break;
         }
     }
@@ -174,7 +189,7 @@ public class Final_Autonomous extends LinearOpMode {
     private void armBrake(String armType) {
         switch (armType) {
             case "MANTIS":
-                hardware.mantis.setPower(0.05);
+                hardware.mantis.setPower(0.088);
                 break;
             case "LIFT":
                 hardware.lift.setPower(0.0);
@@ -218,8 +233,11 @@ public class Final_Autonomous extends LinearOpMode {
             case "STOP":
                 wheelBrake();
                 break;
+            case "STRAFE_RIGHT":
+                setWheelSpeed(speed, -speed, -speed, speed);
         }
     }
+
     private void setClawPosition(String clawType, double position) {
         switch (clawType) {
             case "BOTTOM_GRABBER":
@@ -238,50 +256,149 @@ public class Final_Autonomous extends LinearOpMode {
         }
     }
 
-    private void wiggle () {
-        while(timer.seconds() <= timeToTravel1Tile * 0.15){
+    private void wiggle() {
+        timer.reset();
+        while (timer.seconds() <= 0.1) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("FORWARD", driveSpeed);
         }
         timer.reset();
-        while(timer.seconds() <= timeToTravel1Tile * 0.15){
+        while (timer.seconds() <= 0.1) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("BACKWARD", driveSpeed);
         }
-        timer.reset();
     }
 
     //Moves the preset block to the hopper
-    private void moveToHopper(){
+    private void moveToHopper() {
         armBrake("MANTIS");
-        while(timer.seconds() <= timeToTravel1Tile * 2.68){
+        //Move to be near bucket
+        while (timer.seconds() <= timeToTravel1Tile * 2.55) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("BACKWARD", driveSpeed);
         }
         timer.reset();
-        while(timer.seconds() <= timeToRotate360 / 8) {
+        //Rotate to face bucket
+        while (timer.seconds() <= timeToRotate360 / 8) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("TURN_LEFT", driveSpeed);
         }
         timer.reset();
-        setWheelSpeed(0,0,0,0);
-        while(timer.seconds() <= timeToLiftHopper){
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
+        //Lift hopper
+        while (timer.seconds() <= timeToLiftHopper) {
             setArmSpeed("HOPPER", 1);
         }
         timer.reset();
         armBrake("HOPPER");
-        while(timer.seconds() <= timeToTravel1Tile * 0.248){
+        //Move towards bucket
+        while (timer.seconds() <= 0.5) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("BACKWARD", driveSpeed);
         }
-        for(int i = 0; i < 4; i++){
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
+        timer.reset();
+        //Open door
+        while (timer.seconds() <= 1) {
+            hardware.door.setPosition(open);
+        }
+        //Wiggle a bit
+        for (int i = 0; i < 4; i++) {
             wiggle();
         }
-        setWheelSpeed(0,0,0,0);
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
+        timer.reset();
+        //Move away from bucket
+        while (timer.seconds() <= timeToTravel1Tile * 0.75) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("FORWARD", driveSpeed);
+        }
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
+        //Wait
+        armBrake("HOPPER");
+        timer.reset();
+        //Close door
+        while (timer.seconds() <= 1) {
+            hardware.door.setPosition(close);
+        }
+        timer.reset();
+        //Lower hopper
+        while (timer.seconds() <= timeToLiftHopper) {
+            setArmSpeed("HOPPER", -1);
+        }
+        timer.reset();
+    }
+
+    private void pushBlocks() {
+        //Go forward until next to submersablec
+        while (timer.seconds() <= timeToTravelDiagnal * 0.8) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("FORWARD", driveSpeed);
+        }
+        timer.reset();
+       //Rotate 90 degrees to face the back wall
+        while (timer.seconds() <= 0.462) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("TURN_LEFT", driveSpeed);
+        }
+       timer.reset();
+        //Go forwards to be behind blocks
+        while (timer.seconds() <= timeToTravel1Tile * 1.75) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("FORWARD", driveSpeed);
+        }
+        timer.reset();
+        //Turn right to face blocks
+        while (timer.seconds() <= 0.47*2) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("TURN_RIGHT", driveSpeed);
+        }
+        timer.reset();
+        //Backwards to be near blocks
+        while (timer.seconds() <= timeToTravel1Tile * 0.3) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("BACKWARD", driveSpeed);
+        }
+        timer.reset();
+        //Turn left to be infront of blocks
+        while (timer.seconds() <= 0.92) {
+            telemetry.addLine("Working");
+            telemetry.update();
+            moveWheels("TURN_LEFT", driveSpeed);
+        }
+        timer.reset();
+
+
+        //Do this 3 times
+            //Backwards
+            while (timer.seconds() <= timeToTravel1Tile * 2.1) {
+                telemetry.addLine("Working");
+                telemetry.update();
+                moveWheels("BACKWARD", driveSpeed);
+            }
+            timer.reset();
+//            //Turn left 90
+//            while (timer.seconds() <= timeToRotate360 / 4) {
+//                telemetry.addLine("Working");
+//                telemetry.update();
+//                moveWheels("TURN_LEFT", driveSpeed);
+//            }
+//            timer.reset();
     }
 }
+

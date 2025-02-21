@@ -10,16 +10,19 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware;
 import org.firstinspires.ftc.teamcode.mainEnum;
+import org.firstinspires.ftc.teamcode.puns;
 
 import java.util.Random;
 
 @TeleOp(name = "TeleOp", group = "Final")
 public class Final_TeleOp extends LinearOpMode{
     hardware hardware = new hardware();
+    puns puns = new puns();
 
     private final Random random = new Random();
-    private final String randomPun = hardware.puns[random.nextInt(hardware.puns.length)];
+    private final String randomPun = puns.puns[random.nextInt(puns.puns.length)];
 
+    private ElapsedTime timer = new ElapsedTime();
     @Override
     public void runOpMode() {
         // Initialize hardware
@@ -140,18 +143,48 @@ public class Final_TeleOp extends LinearOpMode{
             hardware.backRight.setPower(-vertical - strafe + turn);
         }
 
+
+    private boolean brakeOn = false;
+    private double reverseStartTime = 0;
+    private boolean reversing = false;
     // Final Movement
     private void finalMovement() {
+        double reduction;
+        double turnReduction;
 
-        double reduction = 0.8;
-        double turnReduction = 0.55;
+        if (gamepad2.left_stick_button || gamepad2.right_stick_button) {
+            brakeOn = !brakeOn;
+            reverseStartTime = timer.seconds();
+            reversing = true;
+        }
 
+        if (reversing && (timer.seconds() - reverseStartTime) <= 0.5) {
+            hardware.frontLeft.setPower(0);
+            hardware.frontRight.setPower(0);
+            hardware.backLeft.setPower(0);
+            hardware.backRight.setPower(0);
+            return;
+        } else {
+            reversing = false;
+        }
+
+        if (brakeOn) {
+            hardware.frontLeft.setPower(0);
+            hardware.frontRight.setPower(0);
+            hardware.backLeft.setPower(0);
+            hardware.backRight.setPower(0);
+            return;
+        }
+
+        reduction = 0.8;
+        turnReduction = 0.55;
 
         double vertical = reduction * gamepad1.left_stick_y;
         double turn = -reduction * gamepad1.right_stick_x;
         double strafe = -turnReduction * gamepad1.left_stick_x;
         movement(vertical, strafe, turn);
     }
+
 
     private void arm(mainEnum state, double speed) {
         switch (state) {
@@ -177,7 +210,7 @@ public class Final_TeleOp extends LinearOpMode{
         double threshold = 0.3; //Threshold for gamepad input
 
         //MANTIS
-        double mantisUpReduction = 0.8;
+        double mantisUpReduction = 0.7;
         double mantisDownReduction = 0.6;
         double mantisUp = gamepad2.right_stick_y * mantisUpReduction;
         double mantisDown = gamepad2.right_stick_y * mantisDownReduction;
