@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Into_The_Deep.hardware;
 import java.util.Random;
 
 
-@Autonomous(name = "Izzy's auto", group = "Final")
+//@Autonomous(name = "Izzy's auto", group = "Final")
 public class izzy extends LinearOpMode {
     hardware hardware = new hardware();
 

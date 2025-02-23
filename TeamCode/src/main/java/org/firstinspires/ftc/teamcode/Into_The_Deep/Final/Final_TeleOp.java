@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Into_The_Deep.puns;
 
 import java.util.Random;
 
-@TeleOp(name = "TeleOp", group = "Final")
+//@TeleOp(name = "TeleOp", group = "Final")
 public class Final_TeleOp extends LinearOpMode{
     hardware hardware = new hardware();
     puns puns = new puns();
