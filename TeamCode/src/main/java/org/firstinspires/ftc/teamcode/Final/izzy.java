@@ -91,6 +91,7 @@ public class izzy extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
             sendTelemetryData();
+            armBrake("MANTIS");
             moveToHopper();
             break;
         }
@@ -153,7 +154,7 @@ public class izzy extends LinearOpMode {
     private void setWheelSpeed(double flSpeed, double frSpeed, double blSpeed, double brSpeed) {
         hardware.frontLeft.setPower(flSpeed);
         hardware.frontRight.setPower(frSpeed);
-        hardware.backLeft.setPower(blSpeed);
+        hardware.backLeft.setPower(blSpeed * 1.6);
         hardware.backRight.setPower(brSpeed);
     }
 
@@ -171,18 +172,10 @@ public class izzy extends LinearOpMode {
         }
     }
 
-    //Brake for the motors
-    private void wheelBrake() {
-        hardware.frontLeft.setPower(0.0);
-        hardware.frontRight.setPower(0.0);
-        hardware.backLeft.setPower(0.0);
-        hardware.backRight.setPower(0.0);
-    }
-
     private void armBrake(String armType) {
         switch (armType) {
             case "MANTIS":
-                hardware.mantis.setPower(0.);
+                hardware.mantis.setPower(0.0);
                 break;
             case "LIFT":
                 hardware.lift.setPower(0.0);
@@ -223,26 +216,6 @@ public class izzy extends LinearOpMode {
             case "TURN_LEFT":
                 setWheelSpeed(-speed, speed, -speed, speed);
                 break;
-            case "STOP":
-                wheelBrake();
-                break;
-        }
-    }
-    private void setClawPosition(String clawType, double position) {
-        switch (clawType) {
-            case "BOTTOM_GRABBER":
-                hardware.bottomGrabber.setPower(position);
-                clawBrake(clawType);
-                break;
-            case "TOP_GRABBER":
-                hardware.topGrabber.setPower(position);
-                clawBrake(clawType);
-                break;
-            case "DOOR":
-                hardware.door.setPosition(position);
-                clawBrake(clawType);
-                break;
-
         }
     }
 
@@ -255,6 +228,7 @@ public class izzy extends LinearOpMode {
                     telemetry.update();
                     moveWheels("FORWARD", speed);
                 }
+                timer.reset();
                 break;
             case "BACKWARD":
                 while(timer.seconds() <= time){
@@ -262,6 +236,7 @@ public class izzy extends LinearOpMode {
                     telemetry.update();
                     moveWheels("BACKWARD", speed);
                 }
+                timer.reset();
                 break;
             case "TURN_RIGHT":
                 while(timer.seconds() <= time){
@@ -269,6 +244,7 @@ public class izzy extends LinearOpMode {
                     telemetry.update();
                     moveWheels("TURN_RIGHT", speed);
                 }
+                timer.reset();
                 break;
             case "TURN_LEFT":
                 while(timer.seconds() <= time){
@@ -276,23 +252,23 @@ public class izzy extends LinearOpMode {
                     telemetry.update();
                     moveWheels("TURN_LEFT", speed);
                 }
+                timer.reset();
+                break;
         }
     }
 
     private void wiggle () {
         moveForTime("FORWARD", 0.02, driveSpeed);
-        timer.reset();
         moveForTime("BACKWARD", 0.02, driveSpeed);
     }
-
+    private void stopRobot(){
+        moveWheels("FORWARD", 0);
+    }
     //Moves the preset block to the hopper
     private void moveToHopper(){
-        armBrake("MANTIS");
-        moveForTime("BACKWARD", timeToTravel1Tile * 2.2, driveSpeed);
-        timer.reset();
+        moveForTime("BACKWARD", timeToTravel1Tile * 2.5, driveSpeed);
         moveForTime("TURN_LEFT", timeToRotate360 / 8, driveSpeed);
-        timer.reset();
-        setWheelSpeed(0,0,0,0);
+        stopRobot();
         while(timer.seconds() <= timeToLiftHopper){
             setArmSpeed("HOPPER", 1);
         }
@@ -306,17 +282,8 @@ public class izzy extends LinearOpMode {
         for(int i = 0; i < 4; i++){
             wiggle();
         }
-        timer.reset();
         moveForTime("FORWARD", timeToTravel1Tile * 0.5, driveSpeed);
-        setWheelSpeed(0,0,0,0);
-        timer.reset();
-        while(timer.seconds() <= timeArmtoGround){
-            telemetry.addLine("Working");
-            telemetry.update();
-            setArmSpeed("MANTIS",-0.6);
-        }
-        sleep(500);
-        timer.reset();
+        stopRobot();
         while(timer.seconds() <= timeToLiftHopper){
             setArmSpeed("HOPPER", -1);
         }
@@ -325,63 +292,7 @@ public class izzy extends LinearOpMode {
             hardware.door.setPosition(close);
         }
         timer.reset();
-        while(timer.seconds() <= timeArmtoHopper) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            setArmSpeed("MANTIS",1);
-        }
-        timer.reset();
         armBrake("HOPPER");
-        armBrake("MANTIS");
         moveForTime("TURN_LEFT", (timeToRotate360*2.795)/16, driveSpeed);
-    }
-
-    private void extendClaw() {
-        while(timer.seconds() <= (timeArmtoGround*1.35)) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            setArmSpeed("MANTIS",-1.0);
-        }
-        timer.reset();
-        setArmSpeed("MANTIS",-0.25);
-        while(timer.seconds() <= timeToTravel1Tile * 0.75){
-            telemetry.addLine("Working");
-            telemetry.update();
-            moveWheels("BACKWARD", driveSpeed);
-        }
-        setWheelSpeed(0,0,0,0);
-        timer.reset();
-        armBrake("MANTIS");
-
-    }
-
-    private void grabBlock() {
-        while(timer.seconds() <= (timeArmtoGround)) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            setArmSpeed("MANTIS",-1.0);
-        }
-        timer.reset();
-        armBrake("MANTIS");
-        while(timer.seconds() <= timeToIntakeBlock) {
-            hardware.bottomGrabber.setPower(-1.0);
-            hardware.topGrabber.setPower(1.0);
-        }
-        clawBrake("BOTTOM_GRABBER");
-        clawBrake("TOP_GRABBER");
-        timer.reset();
-        while(timer.seconds() <= (timeArmtoHopper)) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            setArmSpeed("MANTIS",1.0);
-        }
-        timer.reset();
-        armBrake("MANTIS");
-        while(timer.seconds() <= timeToSpitOutBlock) {
-            hardware.bottomGrabber.setPower(-1.0);
-            hardware.topGrabber.setPower(1.0);
-        }
-        clawBrake("BOTTOM_GRABBER");
-        clawBrake("TOP_GRABBER");
     }
 }

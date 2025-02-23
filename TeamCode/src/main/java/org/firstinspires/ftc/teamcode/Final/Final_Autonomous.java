@@ -65,6 +65,7 @@ public class Final_Autonomous extends LinearOpMode {
     double turnSpeed = 0.55;
 
     //TIME
+    double timeToRotate90 = 0.505;
     double timeToRotate360 = 2.29;
     double timeToTravel1Tile = 0.73;
     double timeToTravelDiagnal = (timeToTravel1Tile * Math.sqrt(8)) / 2;
@@ -92,13 +93,10 @@ public class Final_Autonomous extends LinearOpMode {
         waitForStart();
         while (opModeIsActive()) {
             sendTelemetryData();
-//            while (timer.seconds() <= 0.47) {
-//                telemetry.addLine("Working");
-//                telemetry.update();
-//                moveWheels("TURN_LEFT", driveSpeed);
-//            }
+            armBrake("MANTIS");
+            timer.reset();
             moveToHopper();
-            pushBlocks();
+            timer.reset();
             break;
         }
     }
@@ -160,7 +158,7 @@ public class Final_Autonomous extends LinearOpMode {
     private void setWheelSpeed(double flSpeed, double frSpeed, double blSpeed, double brSpeed) {
         hardware.frontLeft.setPower(flSpeed);
         hardware.frontRight.setPower(frSpeed);
-        hardware.backLeft.setPower(blSpeed);
+        hardware.backLeft.setPower(blSpeed * 1.56);
         hardware.backRight.setPower(brSpeed);
     }
 
@@ -237,6 +235,43 @@ public class Final_Autonomous extends LinearOpMode {
                 setWheelSpeed(speed, -speed, -speed, speed);
         }
     }
+    //Uses while loops and a time parameter to move for a set amount of time
+    private void moveForTime(String direction, double time, double speed){
+        switch (direction) {
+            case "FORWARD":
+                while(timer.seconds() <= time){
+                    telemetry.addLine("Working");
+                    telemetry.update();
+                    moveWheels("FORWARD", speed);
+                }
+                timer.reset();
+                break;
+            case "BACKWARD":
+                while(timer.seconds() <= time){
+                    telemetry.addLine("Working");
+                    telemetry.update();
+                    moveWheels("BACKWARD", speed);
+                }
+                timer.reset();
+                break;
+            case "TURN_RIGHT":
+                while(timer.seconds() <= time){
+                    telemetry.addLine("Working");
+                    telemetry.update();
+                    moveWheels("TURN_RIGHT", speed);
+                }
+                timer.reset();
+                break;
+            case "TURN_LEFT":
+                while(timer.seconds() <= time){
+                    telemetry.addLine("Working");
+                    telemetry.update();
+                    moveWheels("TURN_LEFT", speed);
+                }
+                timer.reset();
+                break;
+        }
+    }
 
     private void setClawPosition(String clawType, double position) {
         switch (clawType) {
@@ -275,7 +310,7 @@ public class Final_Autonomous extends LinearOpMode {
     private void moveToHopper() {
         armBrake("MANTIS");
         //Move to be near bucket
-        while (timer.seconds() <= timeToTravel1Tile * 2.55) {
+        while (timer.seconds() <= timeToTravel1Tile * 3.5) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("BACKWARD", driveSpeed);
@@ -337,68 +372,81 @@ public class Final_Autonomous extends LinearOpMode {
             setArmSpeed("HOPPER", -1);
         }
         timer.reset();
+        moveForTime("FORWARD", timeToTravel1Tile, driveSpeed);
     }
 
     private void pushBlocks() {
-        //Go forward until next to submersablec
-        while (timer.seconds() <= timeToTravelDiagnal * 0.8) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            moveWheels("FORWARD", driveSpeed);
+    timer.reset();
+    //Go backwards until you pass submersable
+        moveForTime("BACKWARD", timeToTravel1Tile, 0.5);
+    //Turn 90 degrees to the right to face wall
+        moveForTime("TURN_RIGHT", timeToRotate90, turnSpeed);
+    //Go backwards until you're bassed the block
+        //moveForTime("BACKWARD", timeToTravel1Tile * 1.5, 0.5);
+    //Turn left 90 degrees to face wall
+//        moveForTime("TURN_RIGHT", timeToRotate90, turnSpeed);
+//        sleep(500);
+    //Go backwards a bit
+//        moveForTime("BACKWARD", timeToTravel1Tile * 0.5, 0.5);
+//        sleep(500);
+    //Turn left 90 degrees to face block
+//        moveForTime("TURN_RIGHT", timeToRotate90, turnSpeed);
+//        sleep(500);
+    //REPEAT THREE TIMES
+    //Go backwards until reached wall
+    //Go forward until you're back at old position
+    //Turn left 90 degrees
+    //Go forward a bit
+    //turn left 90 degrees
+    }
+    private void placeInHopper(){
+        //Lift hopper
+        while (timer.seconds() <= timeToLiftHopper) {
+            setArmSpeed("HOPPER", 1);
         }
         timer.reset();
-       //Rotate 90 degrees to face the back wall
-        while (timer.seconds() <= 0.462) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            moveWheels("TURN_LEFT", driveSpeed);
-        }
-       timer.reset();
-        //Go forwards to be behind blocks
-        while (timer.seconds() <= timeToTravel1Tile * 1.75) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            moveWheels("FORWARD", driveSpeed);
-        }
-        timer.reset();
-        //Turn right to face blocks
-        while (timer.seconds() <= 0.47*2) {
-            telemetry.addLine("Working");
-            telemetry.update();
-            moveWheels("TURN_RIGHT", driveSpeed);
-        }
-        timer.reset();
-        //Backwards to be near blocks
-        while (timer.seconds() <= timeToTravel1Tile * 0.3) {
+        armBrake("HOPPER");
+        //Move towards bucket
+        while (timer.seconds() <= 0.5) {
             telemetry.addLine("Working");
             telemetry.update();
             moveWheels("BACKWARD", driveSpeed);
         }
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
         timer.reset();
-        //Turn left to be infront of blocks
-        while (timer.seconds() <= 0.92) {
+        //Open door
+        while (timer.seconds() <= 1) {
+            hardware.door.setPosition(open);
+        }
+        //Wiggle a bit
+        for (int i = 0; i < 4; i++) {
+            wiggle();
+        }
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
+        timer.reset();
+        //Move away from bucket
+        while (timer.seconds() <= timeToTravel1Tile * 0.75) {
             telemetry.addLine("Working");
             telemetry.update();
-            moveWheels("TURN_LEFT", driveSpeed);
+            moveWheels("FORWARD", driveSpeed);
+        }
+        //Brake
+        setWheelSpeed(0, 0, 0, 0);
+        //Wait
+        armBrake("HOPPER");
+        timer.reset();
+        //Close door
+        while (timer.seconds() <= 1) {
+            hardware.door.setPosition(close);
         }
         timer.reset();
-
-
-        //Do this 3 times
-            //Backwards
-            while (timer.seconds() <= timeToTravel1Tile * 2.1) {
-                telemetry.addLine("Working");
-                telemetry.update();
-                moveWheels("BACKWARD", driveSpeed);
-            }
-            timer.reset();
-//            //Turn left 90
-//            while (timer.seconds() <= timeToRotate360 / 4) {
-//                telemetry.addLine("Working");
-//                telemetry.update();
-//                moveWheels("TURN_LEFT", driveSpeed);
-//            }
-//            timer.reset();
+        //Lower hopper
+        while (timer.seconds() <= timeToLiftHopper) {
+            setArmSpeed("HOPPER", -1);
+        }
+        timer.reset();
     }
 }
 
