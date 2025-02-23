@@ -24,11 +24,11 @@ public class basicSetup extends LinearOpMode {
         If you don't it will immediate start before initialization,
         breaking it.
         This is such a common issue that the driver hub will display
-        "Did you forget to add "waitForStart()"?"
+        "Did you forget to add "waitForStart()"?".
          */
         waitForStart();
         while(opModeIsActive()){
-            //This is where all your code requiring inputs will be
+            //This is where all your code requiring inputs will be.
         }
     }
 }
