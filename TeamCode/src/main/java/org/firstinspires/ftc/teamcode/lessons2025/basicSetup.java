@@ -6,12 +6,16 @@ hover over it to see "import files", press it and it imports it automatically.
 This works for all libraries.
  */
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 /*
 Public means it can be accessed between different files.
 Since the other pre-loaded files need to access it, our
 main 'class'-the main part of the code- must be public
  */
+
+//Tells driver hub that this is a teleOp file.
+@TeleOp(name = "Basic Setup", group = "Learning")
 public class basicSetup extends LinearOpMode {
     //This is where all your motors and variables will be, more on that later
     @Override
